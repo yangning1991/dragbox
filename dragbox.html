@@ -1,0 +1,137 @@
+<!DOCTYPE HTML>
+<html>
+        <head>
+                <meta charset="UTF-8">
+                <title>div横向拖拽排序</title>
+                <script src="http://libs.baidu.com/jquery/1.9.0/jquery.js"></script>
+                <style type="text/css">
+                        body,div{
+                                padding: 0px;
+                                margin: 0px;
+                        }
+
+                        .box {
+                                margin-left: 15px;
+                                padding : 10px;
+                                padding-right: 0px;
+                                width : 810px;
+                                height : 150px;
+                                border : blue solid 1px;
+                        }
+
+                        .horizontal-div{
+                                float : left;
+                                margin-right: 10px;
+                                border: #000 solid 1px;
+                                text-align: center;
+                                width : 150px;
+                                height : 150px;
+                        }
+
+                        .horizontal-div-dash { 
+                                position: absolute; 
+                                width: 150px; 
+                                height: 150px; 
+                                margin-right: 10px; 
+                                border: 1px dashed blue; 
+                                background: #ececec; 
+                                opacity: 0.7; 
+                        } 
+
+                        .dash { 
+                                float : left; 
+                                width: 150px; 
+                                height: 150px; 
+                                margin-right: 10px; 
+                                border: 1px dashed #f00; 
+                        }; 
+                </style>
+
+                <script type="text/javascript">
+                    $(document).ready( function () { 
+                        var range = { x: 0, y: 0 };//鼠标元素偏移量 
+                        var lastPos = { x: 0, y: 0, x1: 0, y1: 0 }; //拖拽对象的四个坐标 
+                        var tarPos = { x: 0, y: 0, x1: 0, y1: 0 }; //目标元素对象的坐标初始化 
+                        var theDiv = null, move = false; choose = false; //拖拽对象 拖拽状态 选中状态
+                        var theDivId =0, theDivHeight = 0, theDivHalf = 0; tarFirstY = 0; //拖拽对象的索引、高度、的初始化。 
+                        var tarDiv = null, tarFirst, tempDiv; //要插入的目标元素的对象, 临时的虚线对象 
+                        var initPos = {x: 0, y: 0};
+                        $(".horizontal-div").each(function(){ 
+                            $(this).mousedown(function (event){ 
+                                        choose = true;
+                                    //拖拽对象 
+                                    theDiv = $(this); 
+                                    //记录拖拽元素初始位置
+                                    initPos.x = theDiv.offset().left;
+                                    initPos.y = theDiv.offset().top;
+                                    //鼠标元素相对偏移量 
+                                    range.x = event.pageX - theDiv.offset().left; 
+                                    range.y = event.pageY - theDiv.offset().top; 
+                                    theDivId = theDiv.index(); 
+                                    theDivWidth = theDiv.width(); 
+                                    theDivHalf = theDivWidth/2; 
+                                    theDiv.attr("class","horizontal-div-dash"); 
+                                    theDiv.css({left: initPos.x + 'px',top: initPos.y + 'px'}); 
+                                     // 创建新元素 插入拖拽元素之前的位置(虚线框) 
+                                    $("<div class='dash'></div>").insertBefore(theDiv); 
+                                    tempDiv = $(".dash");
+                            });
+                       });
+                        
+                        
+                                $(document).mouseup(function(event) { 
+                                        if(!choose){return false;}
+                                            if(!move){
+                                                    theDiv.attr("class", "horizontal-div");
+                                                    tempDiv.remove(); // 删除新建的虚线div
+                                                    choose = false;
+                                                     return false;
+                                            }
+                                        theDiv.insertBefore(tempDiv); // 拖拽元素插入到 虚线div的位置上 
+                                        theDiv.attr("class", "horizontal-div"); //恢复对象的初始样式 
+                                        tempDiv.remove(); // 删除新建的虚线div 
+                                        move = false;
+                                        choose = false;
+                                           }).mousemove(function(event) { 
+                                                   if(!choose) return false;
+                                                   move = true;
+                                                lastPos.x = event.pageX - range.x; 
+                                                lastPos.y = event.pageY - range.y; 
+                                                lastPos.x1 = lastPos.x + theDivWidth; 
+                                                // 拖拽元素随鼠标移动 
+                                                theDiv.css({left: lastPos.x + 'px',top: lastPos.y + 'px'}); 
+                                                // 拖拽元素随鼠标移动 查找插入目标元素 
+                                                var $main = $('.horizontal-div'); // 局部变量：按照重新排列过的顺序 再次获取 各个元素的坐标， 
+                                                $main.each(function () { 
+                                                    tarDiv = $(this); 
+                                                    tarPos.x = tarDiv.offset().left; 
+                                                    tarPos.y = tarDiv.offset().top; 
+                                                    tarPos.x1 = tarPos.x + tarDiv.width()/2; 
+                                                    tarFirst = $main.eq(0); // 获得第一个元素 
+                                                    tarFirstX = tarFirst.offset().left + theDivHalf ; // 第一个元素对象的中心纵坐标 
+                                                    //拖拽对象 移动到第一个位置 
+                                                    if (lastPos.x <= tarFirstX) { 
+                                                                   tempDiv.insertBefore(tarFirst); 
+                                                    } 
+                                                    //判断要插入目标元素的 坐标后， 直接插入 
+                                                    if (lastPos.x >= tarPos.x - theDivHalf && lastPos.x1 >= tarPos.x1 ) { 
+                                                            tempDiv.insertAfter(tarDiv); 
+                                                    } 
+                                            }); 
+                                    });
+
+
+                    });
+                </script>
+        </head>
+        <body>
+                <h1>div横向拖拽排序</h1>
+                <div class="box">
+                        <div class="horizontal-div" id="div1">div1</div>
+                        <div class="horizontal-div" id="div2">div2</div>
+                        <div class="horizontal-div" id="div3">div3</div>
+                        <div class="horizontal-div" id="div4">div4</div>
+                        <div class="horizontal-div" id="div5">div5</div>
+                 </div>
+        </body>
+</html>
